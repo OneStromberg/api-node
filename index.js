@@ -37,7 +37,7 @@ ipc.connectTo(
 app.get('/', function (req, res) {
 	ipc.of.world.emit(
 		'message',
-		'hello'
+		'API CALL'
 	);
 	res.send('Hello World')
 })
