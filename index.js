@@ -37,11 +37,11 @@ ipc.connectTo(
 
 app.get('/', function (req, res) {
     var key = req.query.key;
-    var key = req.query.value;
+    var value  = req.query.value;
     var o = {}
 	ipc.of.world.emit(
 		'message',
-        o[key] = value
+                 {key,value}
 	);
 	res.send(req.query.key + " " + req.query.value);
 })
