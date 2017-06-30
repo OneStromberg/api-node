@@ -1,10 +1,20 @@
 var express = require('express')
 var app = express()
+var moment = require('moment');
+var ipc  =require('node-ipc');
 
-var ipc=require('node-ipc');
-
-ipc.config.id   = 'hello';
+ipc.config.id   = 'api';
 ipc.config.retry= 1500;
+
+var logout = "";
+
+const message = (type, payload = null) => {
+    return {
+        node: ipc.config.id,
+        type: type,
+        payload: payload
+    }
+}
 
 ipc.connectTo(
     'world',
@@ -15,7 +25,7 @@ ipc.connectTo(
                 ipc.log('## connected to world ##'.rainbow, ipc.config.delay);
                 ipc.of.world.emit(
                     'message',  //any event or message type your server listens for
-                    'hello'
+                    message('connect')
                 )
             }
         );
@@ -28,22 +38,42 @@ ipc.connectTo(
         ipc.of.world.on(
             'message',  //any event or message type your server listens for
             function(data){
-                console.log('message', Object.keys(data), Object.values(data));
+                if (data.node == "board" && data.type == "api"){
+                    var {payload} = data;
+                    console.log('data', data);
+                    if (payload) {
+                        var d = new Date();
+                        logout+= '<div><span>date: ' + moment(d).format('MM DD HH:MM:SS') + ';</span><span> pin: ' + payload.pin + ';</span><span> value:' + payload.value + ';</span></div></br>'
+                    }
+                }
                 ipc.log('got a message from world : '.debug, data);
             }
         );
     }
 );
 
+const correctValue = (value) => {
+    if (!value){
+        return false;
+    }
+
+    if (value.indexOf(',') !== -1){
+        return value.split(',');
+    } else if (value === "false"){
+        return false
+    } else if (value === "true"){
+        return true
+    }
+
+    return true
+}
+
 app.get('/', function (req, res) {
     var key = req.query.key;
     var value  = req.query.value;
-    var o = {}
-	ipc.of.world.emit(
-		'message',
-                 {key,value}
-	);
-	res.send(req.query.key + " " + req.query.value);
+    value = correctValue(value);
+	ipc.of.world.emit('message', message('board', {key, value}));
+	res.send(logout);
 })
  
-app.listen(8080)
+app.listen(8090)
