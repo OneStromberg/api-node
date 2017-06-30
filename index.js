@@ -28,6 +28,7 @@ ipc.connectTo(
         ipc.of.world.on(
             'message',  //any event or message type your server listens for
             function(data){
+                console.log('message', data);
                 ipc.log('got a message from world : '.debug, data);
             }
         );
