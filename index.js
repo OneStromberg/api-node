@@ -42,7 +42,7 @@ app.get('/', function (req, res) {
 		'message',
         o[key] = value
 	);
-	res.send('Hello World')
+	res.send(req.query.key + " " + req.query.value);
 })
  
 app.listen(8080)
