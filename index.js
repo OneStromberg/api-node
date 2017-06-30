@@ -35,9 +35,12 @@ ipc.connectTo(
 );
 
 app.get('/', function (req, res) {
+    var key = req.query.key;
+    var key = req.query.value;
+    var o = {}
 	ipc.of.world.emit(
 		'message',
-		'API CALL'
+        o[key] = value
 	);
 	res.send('Hello World')
 })
