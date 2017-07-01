@@ -43,7 +43,7 @@ ipc.connectTo(
                     console.log('data', data);
                     if (payload) {
                         var d = new Date();
-                        logout+= '<div><span>date: ' + moment(d).format('MM DD HH:MM:SS') + ';</span><span> pin: ' + payload.pin + ';</span><span> value:' + payload.value + ';</span></div></br>'
+                        logout+= '<div><span>date: ' + moment(d).format('MMMM Do hh:mm:ss') + ';</span><span> pin: ' + payload.pin + ';</span><span> value:' + payload.value + ';</span></div></br>'
                     }
                 }
                 ipc.log('got a message from world : '.debug, data);
