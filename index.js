@@ -72,7 +72,9 @@ app.get('/', function (req, res) {
     var key = req.query.key;
     var value  = req.query.value;
     value = correctValue(value);
-	ipc.of.world.emit('message', message('board', {key, value}));
+    if (ipc.of && ipc.of.world){
+	    ipc.of.world.emit('message', message('board', {key, value}));
+    }
 	res.send(logout);
 })
  
