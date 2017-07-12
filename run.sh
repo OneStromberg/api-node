@@ -1,0 +1,1 @@
+docker container run -d --name api-node -p 80:8090 onestromberg/api-node

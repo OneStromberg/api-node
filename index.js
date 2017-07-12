@@ -1,12 +1,11 @@
 var express = require('express')
 var app = express()
 var moment = require('moment');
-var ipc  =require('node-ipc');
+var ipc  = require('node-ipc');
+var firebase = require('firebase');
 
 ipc.config.id   = 'api';
 ipc.config.retry= 1500;
-
-var logout = "";
 
 const message = (type, payload = null) => {
     return {
@@ -19,10 +18,45 @@ const message = (type, payload = null) => {
 ipc.connectTo(
     'world',
     function(){
+        const addHistory = (key, value) => {
+            var d = new Date();
+            var o = {};
+            o[key] = value;
+            var refHistory = firebase.database().ref('device/0/archive/' + parseInt(d.getTime() / 1000)).set(o);
+        }
+        async function initFirebase(){
+
+            var config = {
+                apiKey: "AIzaSyDfwYRtBh8lgI10u2RvH_NC0aMPq3Jnf-M",
+                authDomain: "fresh-mint-f5125.firebaseapp.com",
+                databaseURL: "https://fresh-mint-f5125.firebaseio.com",
+                projectId: "fresh-mint-f5125",
+                storageBucket: "fresh-mint-f5125.appspot.com",
+                messagingSenderId: "638729215739"
+            };
+
+            await firebase.initializeApp(config);
+
+            var refCurrent = firebase.database().ref('device/0/current');
+
+            refCurrent.on('value', function(snapshot) {
+                if (ipc.of && ipc.of.world){
+                    var updatedObject = snapshot.val();
+                    var keys = Object.keys(updatedObject);
+                    for (var i in keys){
+                        var key = keys[i];
+                        var value = updatedObject[key];
+                        ipc.of.world.emit('message', message('board', {key: key, value: value}));
+                        addHistory(key, value);
+                    }
+                }
+            });
+        }
+        initFirebase();  
+
         ipc.of.world.on(
             'connect',
             function(){
-                ipc.log('## connected to world ##'.rainbow, ipc.config.delay);
                 ipc.of.world.emit(
                     'message',  //any event or message type your server listens for
                     message('connect')
@@ -30,23 +64,14 @@ ipc.connectTo(
             }
         );
         ipc.of.world.on(
-           'disconnect',
-            function(){
-                ipc.log('disconnected from world'.notice);
-            }
-        );
-        ipc.of.world.on(
             'message',  //any event or message type your server listens for
             function(data){
                 if (data.node == "board" && data.type == "api"){
                     var {payload} = data;
-                    console.log('data', data);
                     if (payload) {
-                        var d = new Date();
-                        logout+= '<div><span>date: ' + moment(d).format('MMMM Do hh:mm:ss') + ';</span><span> pin: ' + payload.pin + ';</span><span> value:' + payload.value + ';</span></div></br>'
+                        addHistory(payload.pin, payload.value)
                     }
                 }
-                ipc.log('got a message from world : '.debug, data);
             }
         );
     }
