@@ -87,9 +87,9 @@ const correctValue = (value) => {
 
     if (value.indexOf(',') !== -1){
         return value.split(',');
-    } else if (value === "false"){
+    } else if (value == "false"){
         return false
-    } else if (value === "true"){
+    } else if (value == "true"){
         return true
     }
 
