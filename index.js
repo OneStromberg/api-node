@@ -20,8 +20,8 @@ const message = (type, payload = null) => {
 ipc.connectTo(
     'world',
     function(){
-        const addHistory = (key, value) => {
-            var d = new Date();
+        const addHistory = (d, key, value) => {
+           
             var o = {};
             o[key] = value;
             var refHistory = firebase.database().ref('device/0/archive/' + parseInt(d.getTime() / 1000)).set(o);
@@ -49,7 +49,6 @@ ipc.connectTo(
                         var key = keys[i];
                         var value = updatedObject[key];
                         ipc.of.world.emit('message', message('board', {key: key, value: value}));
-                        addHistory(key, value);
                     }
                 }
             });
@@ -72,7 +71,8 @@ ipc.connectTo(
                     var {payload} = data;
                     lastAction = `pin: ${payload.pin}; value: ${payload.value}`;
                     if (payload) {
-                        addHistory(payload.pin, payload.value)
+                        var d = new Date();
+                        addHistory(d, payload.pin, payload.value)
                     }
                 }
             }
@@ -100,7 +100,7 @@ app.get('/', function (req, res) {
     var key = req.query.key;
     var value  = req.query.value;
     value = correctValue(value);
-    if (ipc.of && ipc.of.world){
+    if (ipc.of && ipc.of.world && key && value){
 	    ipc.of.world.emit('message', message('board', {key, value}));
     }
 	res.send(lastAction);
