@@ -4,6 +4,8 @@ var moment = require('moment');
 var ipc  = require('node-ipc');
 var firebase = require('firebase');
 
+var lastAction = '';
+
 ipc.config.id   = 'api';
 ipc.config.retry= 1500;
 
@@ -39,7 +41,7 @@ ipc.connectTo(
 
             var refCurrent = firebase.database().ref('device/0/current');
 
-            refCurrent.on('value', function(snapshot) {
+            refCurrent.on('value', (snapshot) => {
                 if (ipc.of && ipc.of.world){
                     var updatedObject = snapshot.val();
                     var keys = Object.keys(updatedObject);
@@ -68,6 +70,7 @@ ipc.connectTo(
             function(data){
                 if (data.node == "board" && data.type == "api"){
                     var {payload} = data;
+                    lastAction = `pin: ${payload.pin}; value: ${payload.value}`;
                     if (payload) {
                         addHistory(payload.pin, payload.value)
                     }
@@ -100,7 +103,7 @@ app.get('/', function (req, res) {
     if (ipc.of && ipc.of.world){
 	    ipc.of.world.emit('message', message('board', {key, value}));
     }
-	res.send(logout);
+	res.send(lastAction);
 })
  
 app.listen(8090)
