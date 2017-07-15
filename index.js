@@ -21,10 +21,9 @@ ipc.connectTo(
     'world',
     function(){
         const addHistory = (d, key, value) => {
-           
             var o = {};
             o[key] = value;
-            var refHistory = firebase.database().ref('device/0/archive/' + parseInt(d.getTime() / 1000)).set(o);
+            var refHistory = firebase.database().ref('device/0/archive/' + parseInt(d.getTime() / 1000)).update(o);
         }
         async function initFirebase(){
 
